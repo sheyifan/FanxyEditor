@@ -18,18 +18,16 @@ export class Coordinate {
     }
 
     toLine(document: Document): Line | undefined {
-        for (let page of document) {
-            for (let paragraph of page) {
-                let paragraphRegion = new Region(paragraph.x, paragraph.y, paragraph.width, paragraph.height);
-                if (!this.in(paragraphRegion)) {
-                    continue;
-                }
+        for (let paragraph of document.paragraphs) {
+            let paragraphRegion = new Region(paragraph.x, paragraph.y, paragraph.width, paragraph.height);
+            if (!this.in(paragraphRegion)) {
+                continue;
+            }
 
-                for (let line of paragraph) {
-                    let lineRegion = new Region(line.x!, line.y!, line.width, line.lineHeight!);
-                    if (this.in(lineRegion)) {
-                        return line;
-                    }
+            for (let line of paragraph) {
+                let lineRegion = new Region(line.x!, line.y!, line.width, line.lineHeight!);
+                if (this.in(lineRegion)) {
+                    return line;
                 }
             }
         }

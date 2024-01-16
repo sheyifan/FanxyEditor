@@ -1,11 +1,47 @@
 import { Text } from "./text";
 
-export class Document extends Array<Page> {
-    constructor(...pages: Page[]) {
-        super(...pages);
+export class Document extends Object {
+    constructor() {
+        super();
+        this.paragraphs = new Array<Paragraph>();
+        let initialParagraph = new Paragraph();
+        let initialLine = new Line();
+        let initialText = new Text("");
+        this.paragraphs.push(initialParagraph);
+        initialParagraph.push(initialLine);
+        initialLine.push(initialText);
     }
-    page(index: number): Page {
-        return this[index];
+    // page(index: number): Page {
+    //     return this[index];
+    // }
+    // lastPage(): Page {
+    //     return this[this.length - 1];
+    // }
+
+    public paragraphs: Array<Paragraph>;
+
+    public addLast(anyString: string) {
+        for (let c of anyString) {
+            let text = new Text(c);
+            let lastParagraph = this.paragraphs[this.paragraphs.length - 1];
+            lastParagraph.data.push(text);
+        }
+    }
+
+    public addFirst() {
+
+    }
+
+    public removeLast() {
+
+    }
+
+    public removeFirst() {
+
+    }
+
+    public insert(paragraphIndex: number) {
+
     }
 }
 
@@ -23,11 +59,16 @@ export class Page extends Array<Paragraph> {
     paragraph(index: number): Paragraph {
         return this[index];
     }
+    lastParagraph(): Paragraph {
+        return this[this.length - 1];
+    }
 }
 
 export class Paragraph extends Array<Line> {
     private _num: number = -1
     public wrapWidth: number = 1024;
+    // all characters without line wrap
+    public data: Line = new Line();
     public get num(): number {
         return this._num;
     }
@@ -61,6 +102,10 @@ export class Paragraph extends Array<Line> {
     }
     public get y(): number {
         return this[0].y!;
+    }
+
+    public lastLine(): Line {
+        return this[this.length - 1];
     }
 }
 
@@ -97,7 +142,7 @@ export class Line extends Array<Text> {
         return this[index];
     }
 
-    pack(ctx: CanvasRenderingContext2D, x: number, y: number) {
+    public pack(ctx: CanvasRenderingContext2D, x: number, y: number) {
         this.x = x;
         this.y = y;
 
@@ -135,18 +180,18 @@ export class Line extends Array<Text> {
         }
     }
 
-    render(ctx: CanvasRenderingContext2D) {
+    public render(ctx: CanvasRenderingContext2D) {
         for (let text of this) {
             text.render(ctx);
         }
     }
 
-    clear(ctx: CanvasRenderingContext2D) {
+    public clear(ctx: CanvasRenderingContext2D) {
         ctx.fillStyle = "#00ff0033";
         ctx.clearRect(this.x!, this.y!, this.width, this.lineHeight!);
     }
 
-    stroke(ctx: CanvasRenderingContext2D, startIndex: number, endIndex: number) {
+    public stroke(ctx: CanvasRenderingContext2D, startIndex: number, endIndex: number) {
         if (endIndex <= startIndex) {
             return;
         }
@@ -167,7 +212,7 @@ export class Line extends Array<Text> {
         }
     }
 
-    highlight(ctx: CanvasRenderingContext2D, startIndex: number, endIndex: number) {
+    public highlight(ctx: CanvasRenderingContext2D, startIndex: number, endIndex: number) {
         if (endIndex <= startIndex) {
             return;
         }
