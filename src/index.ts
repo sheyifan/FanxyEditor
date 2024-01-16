@@ -18,8 +18,28 @@ export function main(ctx: CanvasRenderingContext2D) {
     richEditor.document.addLast("大国之大年元首外交开局大国之\n大年元首外交开局大国之大\n");
     richEditor.document.addLast("开局大国之大年元首外交开局大国之大年元首外交开局大国之大年元首外交开局大国之大年元首外交开局大国之大年元首外交开局大国之大年元首外交开局大国之大年元首外交开局大国之大年元首外交开局大国之大年元首外交开局大国之大");
     richEditor.document.addLast("Test");
+    richEditor.document.addLast("2024 JetBrains google\n年元首外\n交开局大国之大\n");
+    richEditor.document.addLast("大国之大年元首外交开局大国之\n大年元首外交开局大国之大\n");
+    richEditor.document.addLast("开局大国之大年元首外交开局大国之大年元首外交开局大国之大年元首外交开局大国之大年元首外交开局大国之大年元首外交开局大国之大年元首外交开局大国之大年元首外交开局大国之大年元首外交开局大国之大年元首外交开局大国之大");
+    richEditor.document.addLast("Test");
+
+    richEditor.document.addLast("2024 JetBrains google\n年元首外\n交开局大国之大\n");
+    richEditor.document.addLast("大国之大年元首外交开局大国之\n大年元首外交开局大国之大\n");
+    richEditor.document.addLast("开局大国之大年元首外交开局大国之大年元首外交开局大国之大年元首外交开局大国之大年元首外交开局大国之大年元首外交开局大国之大年元首外交开局大国之大年元首外交开局大国之大年元首外交开局大国之大年元首外交开局大国之大");
+    richEditor.document.addLast("Test");
+    richEditor.document.addLast("2024 JetBrains google\n年元首外\n交开局大国之大\n");
+    richEditor.document.addLast("大国之大年元首外交开局大国之\n大年元首外交开局大国之大\n");
+    richEditor.document.addLast("开局大国之大年元首外交开局大国之大年元首外交开局大国之大年元首外交开局大国之大年元首外交开局大国之大年元首外交开局大国之大年元首外交开局大国之大年元首外交开局大国之大年元首外交开局大国之大年元首外交开局大国之大");
+    richEditor.document.addLast("Test");
+    richEditor.document.addLast("2024 JetBrains google\n年元首外\n交开局大国之大\n");
+    richEditor.document.addLast("大国之大年元首外交开局大国之\n大年元首外交开局大国之大\n");
+    richEditor.document.addLast("开局大国之大年元首外交开局大国之大年元首外交开局大国之大年元首外交开局大国之大年元首外交开局大国之大年元首外交开局大国之大年元首外交开局大国之大年元首外交开局大国之大年元首外交开局大国之大年元首外交开局大国之大");
+    richEditor.document.addLast("Test");
+    richEditor.document.addLast("2024 JetBrains google\n年元首外\n交开局大国之大\n");
+    richEditor.document.addLast("大国之大年元首外交开局大国之\n大年元首外交开局大国之大\n");
+    richEditor.document.addLast("开局大国之大年元首外交开局大国之大年元首外交开局大国之大年元首外交开局大国之大年元首外交开局大国之大年元首外交开局大国之大年元首外交开局大国之大年元首外交开局大国之大年元首外交开局大国之大年元首外交开局大国之大\n");
+
     richEditor.pack();
-    richEditor.document.paragraphs.forEach(paragraph => console.log(paragraph));
 }
 
 window.onload = function() {

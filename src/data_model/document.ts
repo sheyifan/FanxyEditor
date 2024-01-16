@@ -8,7 +8,7 @@ export class Document extends Object {
         let initialLine = new Line();
         let initialText = new Text("");
         this.paragraphs.push(initialParagraph);
-        initialParagraph.push(initialLine);
+        initialParagraph.lines.push(initialLine);
         initialLine.push(initialText);
     }
     // page(index: number): Page {
@@ -18,13 +18,17 @@ export class Document extends Object {
     //     return this[this.length - 1];
     // }
 
+    public data = new Array<Text>();
     public paragraphs: Array<Paragraph>;
+
+    public pages = new Array<Page>();
 
     public addLast(anyString: string) {
         for (let c of anyString) {
             let text = new Text(c);
             let lastParagraph = this.paragraphs[this.paragraphs.length - 1];
             lastParagraph.data.push(text);
+            this.data.push(text);
         }
     }
 
@@ -45,7 +49,10 @@ export class Document extends Object {
     }
 }
 
-export class Page extends Array<Paragraph> {
+export class Page extends Object {
+    public lines: Array<Line>;
+    pageIndex: number = -1;
+
     private _num: number = -1
     public get num(): number {
         return this._num;
@@ -53,22 +60,46 @@ export class Page extends Array<Paragraph> {
     public set num(lineNumber: number) {
         this._num = lineNumber;
     }
-    constructor(...paragraphs: Paragraph[]) {
-        super(...paragraphs);
+    constructor() {
+        super();
+        this.lines = new Array<Line>();;
     }
-    paragraph(index: number): Paragraph {
-        return this[index];
+    line(index: number): Line {
+        return this.lines[index];
     }
-    lastParagraph(): Paragraph {
-        return this[this.length - 1];
+    lastLine(): Line {
+        return this.lines[this.lines.length - 1];
+    }
+
+    public get width(): number {
+        if (this.lines.length === 0) {
+            return 0;
+        }
+
+        return this.lines.map(line => line.width).reduce((previousWidth, nextWidth) => {
+            return nextWidth > previousWidth ? nextWidth : previousWidth;
+        })!;
+    }
+
+    public get height(): number {
+        return this.lines.map(line => line.lineHeight).reduce((previousLineHeight, nextLineHeight) => {
+            return previousLineHeight! + nextLineHeight!;
+        })!;
+    }
+    public get x(): number {
+        return this.lines[0].x!;
+    }
+    public get y(): number {
+        return this.lines[0].y!;
     }
 }
 
-export class Paragraph extends Array<Line> {
+export class Paragraph extends Object {
     private _num: number = -1
     public wrapWidth: number = 1024;
     // all characters without line wrap
-    public data: Line = new Line();
+    public data = new Array<Text>();
+    public lines = new Array<Line>();
     public get num(): number {
         return this._num;
     }
@@ -78,34 +109,31 @@ export class Paragraph extends Array<Line> {
     constructor(...lines: Line[]) {
         super(...lines);
     }
-    line(index: number): Line {
-        return this[index];
-    }
 
     public get width(): number {
-        if (this.length === 0) {
+        if (this.lines.length === 0) {
             return 0;
         }
 
-        return this.map(line => line.width).reduce((previousWidth, nextWidth) => {
+        return this.lines.map(line => line.width).reduce((previousWidth, nextWidth) => {
             return nextWidth > previousWidth ? nextWidth : previousWidth;
         })!;
     }
 
     public get height(): number {
-        return this.map(line => line.lineHeight).reduce((previousLineHeight, nextLineHeight) => {
+        return this.lines.map(line => line.lineHeight).reduce((previousLineHeight, nextLineHeight) => {
             return previousLineHeight! + nextLineHeight!;
         })!;
     }
     public get x(): number {
-        return this[0].x!;
+        return this.lines[0].x!;
     }
     public get y(): number {
-        return this[0].y!;
+        return this.lines[0].y!;
     }
 
     public lastLine(): Line {
-        return this[this.length - 1];
+        return this.lines[this.lines.length - 1];
     }
 }
 

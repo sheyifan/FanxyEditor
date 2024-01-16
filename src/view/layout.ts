@@ -24,7 +24,7 @@ export class Coordinate {
                 continue;
             }
 
-            for (let line of paragraph) {
+            for (let line of paragraph.lines) {
                 let lineRegion = new Region(line.x!, line.y!, line.width, line.lineHeight!);
                 if (this.in(lineRegion)) {
                     return line;

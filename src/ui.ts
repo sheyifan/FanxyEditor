@@ -1,5 +1,5 @@
 import { Text, TextStyle } from './data_model/text'
-import { Document, Page, Paragraph, Line } from './data_model/document';
+import { Document, Paragraph, Line, Page } from './data_model/document';
 import { Coordinate, Region } from './view/layout';
 
 export class Editor {
@@ -46,9 +46,9 @@ export class Editor {
         this.renderPageMargin();
 
         this.editPosition.x = this.userZoneBias;
-        this.editPosition.y = this.userZoneBias;
+        this.editPosition.y = this.getEditorTopLeftY(0);
         this.caretPosition.x = this.userZoneBias;
-        this.caretPosition.y = this.userZoneBias;
+        this.caretPosition.y = this.getEditorTopLeftY(0);
 
         this.document = new Document();
 
@@ -80,8 +80,20 @@ export class Editor {
         line?.render(this.ctx);
     }
 
-    private addPage() {
+    private getEditorBottomYFromPage(pageIndex: number) {
+        return (pageIndex + 1) * (this.pageHeight + this.pageMargin) - this.padding - this.pageIndicatorSize - 1;
+    }
 
+    private getEditorTopLeftY(pageIndex: number) {
+        return this.userZoneBias + pageIndex * (this.pageHeight + this.pageMargin);
+    }
+
+    private resizeCanvas() {
+        console.log(`Page ${this.pageCount}`)
+        let width = this.pageWidth;
+        let height = this.pageHeight * this.pageCount + (this.pageCount - 1) * this.pageMargin;
+        this.canvas.style.width = `${width}px`;
+        this.canvas.style.height = `${height}px`;
     }
 
     private initializeHighDPICanvas() {
@@ -102,8 +114,8 @@ export class Editor {
         let height = this.pageHeight * this.pageCount + (this.pageCount - 1) * this.pageMargin;
 
         // Visual pixel size
-        this.canvas.style.width = `${width}px`;
-        this.canvas.style.height = `${height}px`;
+        this.canvas.style.width = `${width}px`
+        this.canvas.style.height = `${this.pageHeight}px`
     }
 
     renderPagePaddingIndicator() {
@@ -189,19 +201,24 @@ export class Editor {
         }
 
         const wrapLines = () => {
+            this.document.pages.slice(0, this.document.pages.length);
+            let pageIndex = 0;
+            this.pageCount = 1;
+
             for (let [paragraphIndex, paragraph] of this.document.paragraphs.entries()) {
                 // Clear all wrapped lines before re-arrange
-                paragraph.splice(0, paragraph.length);
-
-                // Initial wrapped line
-                let line = new Line();
-                line.lineHeightMultiplier = this.defaultLineHeightMultiplier;
-                paragraph.push(line);
+                paragraph.lines.splice(0, paragraph.lines.length);
 
                 for (let text of paragraph.data) {
+                    if (paragraph.lines.length === 0) {
+                        // Initial wrapped line
+                        let line = new Line();
+                        line.lineHeightMultiplier = this.defaultLineHeightMultiplier;
+                        paragraph.lines.push(line);
+                    }
                     let _lastLine = paragraph.lastLine();
 
-                    // Try pushing one character to last line of paragraph and calculating its size
+                    // Try pushing one character to the last line of paragraph, and calculate its size
                     _lastLine.push(text);
                     _lastLine.pack(this.ctx, this.editPosition.x, this.editPosition.y);
                     let lastLineHeight = _lastLine.lineHeight;
@@ -209,7 +226,7 @@ export class Editor {
                     if (_lastLine.width > this.wrapWidth) {
                         _lastLine.pop();
                         _lastLine.pack(this.ctx, this.editPosition.x, this.editPosition.y);
-        
+
                         let newLine = new Line();
                         newLine.lineHeightMultiplier = this.defaultLineHeightMultiplier;
                         newLine.push(text);
@@ -217,7 +234,22 @@ export class Editor {
                         this.editPosition.y += lastLineHeight!;
                         newLine.pack(this.ctx, this.editPosition.x, this.editPosition.y);
 
-                        paragraph.push(newLine);
+                        let currentPageEditableBottomY = this.editPosition.y + newLine.lineHeight!;
+                        if (this.getEditorBottomYFromPage(pageIndex) < currentPageEditableBottomY) {
+                            console.log(this.getEditorBottomYFromPage(pageIndex))
+                            pageIndex++;
+                            this.pageCount++;
+                            this.editPosition.x = this.userZoneBias;
+                            this.editPosition.y = this.getEditorTopLeftY(pageIndex);
+                            newLine.pack(this.ctx, this.editPosition.x, this.editPosition.y);
+                        }
+                        
+                        console.log(`new line ${this.editPosition.x} ${this.editPosition.y} ${newLine.width} ${newLine.lineHeight!}`)
+                        paragraph.lines.push(newLine);
+                        if (!this.document.pages[pageIndex]) {
+                            this.document.pages[pageIndex] = new Page();
+                        }
+                        this.document.pages[pageIndex].lines.push(newLine);
                     }
                 }
 
@@ -237,11 +269,11 @@ export class Editor {
      */
     render() {
         this.clear();
-        this.renderCanvas();
+        // this.resizeCanvas();
         this.renderPagePaddingIndicator();
         this.renderPageMargin();
         for (let paragraph of this.document.paragraphs) {
-            for (let line of paragraph) {
+            for (let line of paragraph.lines) {
                 line.render(this.ctx);
             }
         }
@@ -273,6 +305,7 @@ export class Editor {
         }, 500);
 
         this.canvas.addEventListener('mousedown', mouseEvent => {
+            console.log(`x: ${mouseEvent.offsetX} y: ${mouseEvent.offsetY}`)
             let coordinate = new Coordinate(mouseEvent.offsetX, mouseEvent.offsetY);
             let targetText: Text | undefined = undefined;
             let caretProperty: { size: number | undefined, x: number | undefined, y: number | undefined} = {
@@ -285,7 +318,7 @@ export class Editor {
                     continue;
                 }
 
-                for (let line of paragraph) {
+                for (let line of paragraph.lines) {
                     let lineRegion = new Region(line.x!, line.y!, line.width, line.lineHeight!);
                     if (!coordinate.in(lineRegion)) {
                         continue;
