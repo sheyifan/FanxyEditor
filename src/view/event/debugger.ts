@@ -1,4 +1,4 @@
-import { Document } from '../../data_model/document';
+import { Document, Line } from '../../data_model/document';
 import { Text } from '../../data_model/text'
 import { Editor } from '../../ui';
 import { Coordinate } from '../layout';
@@ -28,6 +28,10 @@ export class DebugHandlerRegister {
             let paragraph = coordinate.toParagraph(this.document);
             line?.highlight(this.ctx, 0, line.length);
             paragraph?.highlight(this.ctx, 0, paragraph.lines.length);
+            let textIndexInParagraph = coordinate.textIndexInParagraph(this.document);
+            if (textIndexInParagraph) {
+                (<Line>line).highlight(this.ctx, textIndexInParagraph, textIndexInParagraph + 1);
+            }
 
             if (x > this.editor.userZoneBias
                 && y > this.editor.userZoneBias
@@ -35,6 +39,7 @@ export class DebugHandlerRegister {
                 && y < this.editor.pageHeight * this.editor.pageCount + (this.editor.pageCount - 1) * this.editor.pageMargin - this.editor.userZoneBias) {
                 let promptText = new Text(`x: ${x} y: ${y}`);
                 promptText.pack(this.ctx, x, y);
+                promptText.pack(this.ctx, x + 10, y - <number>promptText.layout.height - 10);
                 promptText.render(this.ctx);
             }
         })

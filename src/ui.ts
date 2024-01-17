@@ -288,9 +288,7 @@ export class Editor {
             let caretProperty: { size: number | undefined, x: number | undefined, y: number | undefined} = {
                 size: undefined, x: undefined, y: undefined
             }
-            this.document.paragraphs.forEach(paragraph => {
-                console.log(paragraph);
-            })
+            let isCaretAtLeft = true;
             for (let paragraph of this.document.paragraphs) {
                 for (let line of paragraph.lines) {
                     let lineRegion = new Region(line.x!, line.y!, line.width, line.lineHeight!);
@@ -301,16 +299,24 @@ export class Editor {
                         let textRegion = new Region(text.layout.x!, line.y!, text.layout.width!, line.maxAscent! + line.maxDescent!);
                         if (coordinate.in(textRegion)) {
                             targetText = text;
+                            // Caret size and Y position are decided by the whole line
                             caretProperty.size = line.maxAscent! + line.maxDescent!;
-                            caretProperty.x = text.layout.x;
                             caretProperty.y = line.y;
+
+                            if (coordinate.x! <= targetText.layout.x! + targetText.layout.width! / 2) {
+                                isCaretAtLeft = true;
+                            }
+                            else {
+                                isCaretAtLeft = false;
+                            }
                         }
                     }
                 }
             }
             
             if (targetText) {
-                let x = targetText?.layout.x!
+                // Caret X position are decided by the whole line
+                let x = targetText.layout.x! + (isCaretAtLeft ? 0 : targetText.layout.width!);
                 let y = caretProperty.y!;
                 let height = caretProperty.size;
 
@@ -319,7 +325,6 @@ export class Editor {
                 this.caretPosition.x = x;
                 this.caretPosition.y = y;
                 this.caretSize = height!;
-                console.log(targetText);
             }
         })
     }

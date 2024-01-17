@@ -1,4 +1,5 @@
 import { Document, Line, Paragraph } from "../data_model/document";
+import { Text } from "../data_model/text";
 
 export class Coordinate {
     x: number | undefined = undefined;
@@ -15,6 +16,22 @@ export class Coordinate {
         } else {
             return false;
         }
+    }
+
+    textIndexInParagraph(document: Document): number | undefined {
+        let line = this.toLine(document);
+        let maxLineAscent = line?.maxAscent;
+        let lineHeight = line?.lineHeight;
+        let textIndex = undefined;
+        line?.forEach((text, index) => {
+            let textRegion = new Region(
+                <number>text.layout.x, <number>text.layout.y - <number>maxLineAscent,
+                <number>text.layout.width, <number>lineHeight);
+            if (this.in(textRegion)) {
+                textIndex = index;
+            }
+        });
+        return textIndex;
     }
 
     toLine(document: Document): Line | undefined {
