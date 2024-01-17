@@ -135,6 +135,21 @@ export class Paragraph extends Object {
     public lastLine(): Line {
         return this.lines[this.lines.length - 1];
     }
+
+    public highlight(ctx: CanvasRenderingContext2D, startIndex: number, endIndex: number) {
+        if (endIndex <= startIndex) {
+            return;
+        }
+
+        for (let i = 0 ; i < endIndex ; i++) {
+            let line = this.lines[i];
+            
+            if (i >= startIndex) {
+                ctx.fillStyle = "#00ff0033";
+                ctx.fillRect(<number>line.x, <number>line.y, line.width, <number>line.lineHeight);
+            }
+        }
+    }
 }
 
 export class Line extends Array<Text> {

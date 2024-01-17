@@ -1,4 +1,4 @@
-import { Document, Line } from "../data_model/document";
+import { Document, Line, Paragraph } from "../data_model/document";
 
 export class Coordinate {
     x: number | undefined = undefined;
@@ -19,16 +19,26 @@ export class Coordinate {
 
     toLine(document: Document): Line | undefined {
         for (let paragraph of document.paragraphs) {
-            let paragraphRegion = new Region(paragraph.x, paragraph.y, paragraph.width, paragraph.height);
-            if (!this.in(paragraphRegion)) {
-                continue;
-            }
-
             for (let line of paragraph.lines) {
                 let lineRegion = new Region(line.x!, line.y!, line.width, line.lineHeight!);
                 if (this.in(lineRegion)) {
                     return line;
                 }
+            }
+        }
+    }
+
+    toParagraph(document: Document): Paragraph | undefined {
+        for (let paragraph of document.paragraphs) {          
+            let isIn = false;
+            for (let line of paragraph.lines) {
+                let lineRegion = new Region(line.x!, line.y!, line.width, line.lineHeight!);
+                if (this.in(lineRegion)) {
+                    isIn = true;
+                }
+            }
+            if (isIn) {
+                return paragraph;
             }
         }
     }

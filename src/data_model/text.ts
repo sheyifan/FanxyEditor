@@ -77,6 +77,7 @@ export class Text extends Object {
     }
 
     render(ctx: CanvasRenderingContext2D) {
+        ctx.font = this.style.font.toString();
         ctx.fillStyle = this.style.color;
         ctx.fillText(this.value, this.layout.x!, this.layout.y!);
     }

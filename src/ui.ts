@@ -1,6 +1,7 @@
 import { Text, TextStyle } from './data_model/text'
 import { Document, Paragraph, Line, Page } from './data_model/document';
 import { Coordinate, Region } from './view/layout';
+import { DebugHandlerRegister } from './view/event/debugger';
 
 export class Editor {
     ctx: CanvasRenderingContext2D;
@@ -14,7 +15,7 @@ export class Editor {
     pageHeight: number = 1318;
     pageMargin = 18;
 
-    pageCount = 2;
+    pageCount = 1;
 
     editPosition = {
         x: 0,
@@ -27,7 +28,9 @@ export class Editor {
     }
     caretSize: number;
 
-    private userZoneBias = this.padding + this.pageIndicatorSize + 1;
+    public get userZoneBias(): number {
+        return this.padding + this.pageIndicatorSize + 1;
+    }
     public wrapWidth: number = this.pageWidth - 2 * (this.padding + this.pageIndicatorSize + 1);
 
     style = new TextStyle();
@@ -88,15 +91,10 @@ export class Editor {
         return this.userZoneBias + pageIndex * (this.pageHeight + this.pageMargin);
     }
 
-    private resizeCanvas() {
-        console.log(`Page ${this.pageCount}`)
-        let width = this.pageWidth;
-        let height = this.pageHeight * this.pageCount + (this.pageCount - 1) * this.pageMargin;
-        this.canvas.style.width = `${width}px`;
-        this.canvas.style.height = `${height}px`;
-    }
-
-    private initializeHighDPICanvas() {
+    /**
+     * Initialize canvas by page count. This action resize and clear the canvas.
+     */
+    public initializeHighDPICanvas() {
         let width = this.pageWidth;
         let height = this.pageHeight * this.pageCount + (this.pageCount - 1) * this.pageMargin;
 
@@ -107,15 +105,6 @@ export class Editor {
         this.canvas.style.width = `${width}px`;
         this.canvas.style.height = `${height}px`;
         this.ctx.scale(this.devicePixelRatio, this.devicePixelRatio);
-    }
-
-    private renderCanvas() {
-        let width = this.pageWidth;
-        let height = this.pageHeight * this.pageCount + (this.pageCount - 1) * this.pageMargin;
-
-        // Visual pixel size
-        this.canvas.style.width = `${width}px`
-        this.canvas.style.height = `${this.pageHeight}px`
     }
 
     renderPagePaddingIndicator() {
@@ -236,7 +225,6 @@ export class Editor {
 
                         let currentPageEditableBottomY = this.editPosition.y + newLine.lineHeight!;
                         if (this.getEditorBottomYFromPage(pageIndex) < currentPageEditableBottomY) {
-                            console.log(this.getEditorBottomYFromPage(pageIndex))
                             pageIndex++;
                             this.pageCount++;
                             this.editPosition.x = this.userZoneBias;
@@ -244,7 +232,6 @@ export class Editor {
                             newLine.pack(this.ctx, this.editPosition.x, this.editPosition.y);
                         }
                         
-                        console.log(`new line ${this.editPosition.x} ${this.editPosition.y} ${newLine.width} ${newLine.lineHeight!}`)
                         paragraph.lines.push(newLine);
                         if (!this.document.pages[pageIndex]) {
                             this.document.pages[pageIndex] = new Page();
@@ -261,15 +248,14 @@ export class Editor {
 
         breakParagraphs();
         wrapLines();
+        this.initializeHighDPICanvas();
         this.render();
     }
 
     /**
-     * Render all content
+     * Re-render all content
      */
     render() {
-        this.clear();
-        // this.resizeCanvas();
         this.renderPagePaddingIndicator();
         this.renderPageMargin();
         for (let paragraph of this.document.paragraphs) {
@@ -278,16 +264,6 @@ export class Editor {
             }
         }
         this.renderCaret();
-    }
-
-    /**
-     * Clear all content
-     */
-    clear() {
-        let width = this.pageWidth;
-        let height = this.pageHeight * this.pageCount + (this.pageCount - 1) * this.pageMargin;
-
-        this.ctx.clearRect(0, 0, width, height);
     }
 
     registerEventMessageHandlers() {
@@ -304,20 +280,18 @@ export class Editor {
             }
         }, 500);
 
+        new DebugHandlerRegister(this).register();
+
         this.canvas.addEventListener('mousedown', mouseEvent => {
-            console.log(`x: ${mouseEvent.offsetX} y: ${mouseEvent.offsetY}`)
             let coordinate = new Coordinate(mouseEvent.offsetX, mouseEvent.offsetY);
             let targetText: Text | undefined = undefined;
             let caretProperty: { size: number | undefined, x: number | undefined, y: number | undefined} = {
                 size: undefined, x: undefined, y: undefined
             }
+            this.document.paragraphs.forEach(paragraph => {
+                console.log(paragraph);
+            })
             for (let paragraph of this.document.paragraphs) {
-                    
-                let paragraphRegion = new Region(paragraph.x, paragraph.y, paragraph.width, paragraph.height);
-                if (!coordinate.in(paragraphRegion)) {
-                    continue;
-                }
-
                 for (let line of paragraph.lines) {
                     let lineRegion = new Region(line.x!, line.y!, line.width, line.lineHeight!);
                     if (!coordinate.in(lineRegion)) {
@@ -345,6 +319,7 @@ export class Editor {
                 this.caretPosition.x = x;
                 this.caretPosition.y = y;
                 this.caretSize = height!;
+                console.log(targetText);
             }
         })
     }
