@@ -2,6 +2,7 @@ import { Text, TextStyle } from './data_model/text'
 import { Document, Paragraph, Line, Page } from './data_model/document';
 import { Coordinate, Region } from './view/layout';
 import { DebugHandlerRegister } from './view/event/debugger';
+import { textCursorHandler } from './view/delegate';
 
 export class Editor {
     ctx: CanvasRenderingContext2D;
@@ -281,6 +282,7 @@ export class Editor {
         }, 500);
 
         new DebugHandlerRegister(this).register();
+        this.canvas.addEventListener('mousemove', event => textCursorHandler(event, this));
 
         this.canvas.addEventListener('mousedown', mouseEvent => {
             let coordinate = new Coordinate(mouseEvent.offsetX, mouseEvent.offsetY);
@@ -289,10 +291,23 @@ export class Editor {
                 size: undefined, x: undefined, y: undefined
             }
             let isCaretAtLeft = true;
-            for (let paragraph of this.document.paragraphs) {
+            searchText: for (let paragraph of this.document.paragraphs) {
                 for (let line of paragraph.lines) {
+                    // Directly click on text, or click after a line, will change this status to true
+                    let ifClickedAfterLine = false;
                     let lineRegion = new Region(line.x!, line.y!, line.width, line.lineHeight!);
+
                     if (!coordinate.in(lineRegion)) {
+                        if (coordinate.before(lineRegion) || coordinate.after(lineRegion) && coordinate.x! >= this.userZoneBias && coordinate.x! <= this.pageWidth - this.userZoneBias) {
+                            targetText = line[line.length - 1];
+                            caretProperty.size = line.maxAscent! + line.maxDescent!;
+                            caretProperty.y = line.y;
+
+                            isCaretAtLeft = false;
+
+                            break searchText;
+                        }
+
                         continue;
                     }
                     for (let text of line) {
@@ -309,8 +324,12 @@ export class Editor {
                             else {
                                 isCaretAtLeft = false;
                             }
+
+                            break searchText;
                         }
                     }
+
+                    // Move caret to line end when user click after a line
                 }
             }
             

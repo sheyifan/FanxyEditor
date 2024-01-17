@@ -11,7 +11,27 @@ export class Coordinate {
     }
 
     in(region: Layout): boolean {
-        if (this.x! >= region.x! && this.y! > region.y! && this.x! <= (region.x! + region.width!) && this.y! <= (region.y! + region.height!)) {
+        if (this.x! >= region.x! && this.y! >= region.y! && this.x! <= (region.x! + region.width!) && this.y! <= (region.y! + region.height!)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * In x range but larger than y range
+     * @param region 
+     */
+    after(region: Layout): boolean {
+        if (this.x! > (region.x! + region.width!) && this.y! >= region.y! && this.y! <= (region.y! + region.height!)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    before(region: Layout): boolean {
+        if (this.x! < region.x! && this.y! >= region.y! && this.y! <= (region.y! + region.height!)) {
             return true;
         } else {
             return false;
